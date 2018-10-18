@@ -181,10 +181,10 @@ export default class DefaultPopup extends Component {
       .start();
   }
 
-  createOnPressWithCallback = (callback) => {
+  createOnPressWithCallback = (callback, slideOutDuration=200) => {
     return () => {
       // slide out
-      this.slideOutAndDismiss(200);
+      this.slideOutAndDismiss(slideOutDuration);
 
       // Run callback
       if (callback) callback();
@@ -196,19 +196,19 @@ export default class DefaultPopup extends Component {
     if (slideOutTimer) clearTimeout(slideOutTimer);
   }
 
-  slideIn = (duration) => {
+  slideIn = (duration, callback) => {
     // Animate "this.state.containerSlideOffsetY"
     const { containerSlideOffsetY } = this.state;  // Using the new one is fine
-    Animated.timing(containerSlideOffsetY, { toValue: 1, duration: duration || 400, })  // TODO: customize
+    Animated.timing(containerSlideOffsetY, { toValue: 1, duration: duration || 400, })
       .start(({finished}) => {
-        this.countdownToSlideOut();
+        if (callback) callback();
       });
   }
 
-  countdownToSlideOut = () => {
+  countdownToSlideOut = (duration) => {
     const slideOutTimer = setTimeout(() => {
       this.slideOutAndDismiss();
-    }, 4000);  // TODO: customize
+    }, duration || 4000);
     this.setState({ slideOutTimer });
   }
 
@@ -216,7 +216,7 @@ export default class DefaultPopup extends Component {
     const { containerSlideOffsetY } = this.state;
 
     // Reset animation to 0 && show it && animate
-    Animated.timing(containerSlideOffsetY, { toValue: 0, duration: duration || 400, })  // TODO: customize
+    Animated.timing(containerSlideOffsetY, { toValue: 0, duration: duration || 400, })
       .start(({finished}) => {
         // Reset everything and hide the popup
         this.setState({ show: false });
@@ -230,7 +230,7 @@ export default class DefaultPopup extends Component {
     // Put message configs into state && show popup
     const _messageConfig = messageConfig || {};
     const { onPress: onPressCallback, appIconSource, appTitle, timeText, title, body } = _messageConfig;
-    const onPressAndSlideOut = this.createOnPressWithCallback(onPressCallback);
+    const onPressAndSlideOut = this.createOnPressWithCallback(onPressCallback, this.props.slideOutDuration);
     this.setState({
       show: true,
       containerSlideOffsetY: new Animated.Value(0),
@@ -238,8 +238,18 @@ export default class DefaultPopup extends Component {
       containerDragOffsetY: new Animated.Value(0),
       containerScale: new Animated.Value(1),
       onPressAndSlideOut, appIconSource, appTitle, timeText, title, body
-    }, this.slideIn);
+    }, () => {
+      this.slideIn(this.props.slideInDuration, () => {
+        this.countdownToSlideOut(messageConfig.duration || this.props.duration);
+      });
+    });
   }
+}
+
+DefaultPopup.defaultProps = {
+  duration: 4000,
+  slideInDuration: 400,
+  slideOutDuration: 200
 }
 
 const styles = StyleSheet.create({
