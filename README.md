@@ -56,6 +56,7 @@ Put it in a wrapper component. (Maybe where you handle your incoming push notifi
 componentDidMount() {
   this.popup.show({
     onPress: function() {console.log('Pressed')},
+    duration: 5000,
     appIconSource: require('./assets/icon.jpg'),
     appTitle: 'Some App',
     timeText: 'Now',
@@ -81,6 +82,7 @@ componentDidMount() {
 | **`timeText`** | String | '' | Text on the upper right |
 | **`title`** | String | '' | Message title |
 | **`body`** | String | '' | Message body (support multi-line) |
+| **`duration`** | Number | 4000 | Popup duration |
 
 
 ## Roadmap
